@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +11,15 @@ namespace WebProjectPatrice
     {
         static void Main(string[] args)
         {
-            string[] array = { "one", "two", "three" };
+            string line;
+            List<string> data = new List<string>();
+            StreamReader file = new StreamReader("KeyWords.txt");
+            while ((line = file.ReadLine()) != null)
+            { 
+                if (line != "") data.Add(line); 
+            }
+            file.Close();
+
         }
     }
 }
