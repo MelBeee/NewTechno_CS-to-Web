@@ -87,8 +87,28 @@ namespace WebProjectPatrice
             {
                 line = line.Replace(keywordsList.ElementAt(i) + " ", "<span style='color: blue;'>" + keywordsList.ElementAt(i) + "</span>" + " ");
             }
-            
             return line;
+        }
+
+        private static void Statistiques()
+        {
+            StreamReader file = new StreamReader(csFilesToConvert.ElementAt(0));
+            var statistiques = new Dictionary<string, int>();
+            for(string s; file >> s) 
+            statistiques[s]++;
         }
     }
 }
+
+/*
+  blalbalba
+  lbalbalblb
+  blalblabalba
+  <string> blablabla <allo> werwoer a /salut"
+*/
+
+/*
+ ifstream in{ "" };
+for (string s; in >> s;)
+mots[s]++;
+ */
