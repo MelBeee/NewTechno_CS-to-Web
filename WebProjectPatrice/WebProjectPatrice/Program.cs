@@ -57,9 +57,11 @@ namespace WebProjectPatrice
                 StreamWriter fileEnd = new StreamWriter("End.txt");
                 while ((Input = file.ReadLine()) != null)
                 {
-                    string v =  Input.Replace("&", "&gt");
-                    v = v.Replace(">", "&gt");
-                    v = v.Replace("<", "&lt");
+                    string v =  Input.Replace("&", "&gt;");
+                    v = v.Replace(">", "&gt;");
+                    v = v.Replace("<", "&lt;");
+                    if (keywords)
+                        v = AddColor(v);
                     fileEnd.WriteLine(v);
                 }
                 file.Close();
@@ -67,7 +69,14 @@ namespace WebProjectPatrice
             }
         }
 
-
-
+        private static string AddColor(string line)
+        {
+            for (int i = 0; i < keywordsList.Count ; ++i)
+            {
+                line = line.Replace(keywordsList.ElementAt(i) + " ", "<span class='color'>" + keywordsList.ElementAt(i) + "</span>");
+            }
+            
+            return line;
+        }
     }
 }
