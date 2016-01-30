@@ -51,10 +51,23 @@ namespace WebProjectPatrice
         private static void ReadEachLine()
         {
             string Input;
+            StreamWriter fileEnd = new StreamWriter("End.html");
+            string TemplateStart = "<!DOCTYPE html>" + '\n' +
+                                      "<html>" + '\n' +
+                                      "<head>" + '\n' +
+                                      "<meta charset = 'utf-8' />" + '\n' +
+                                      "<title> Titre </title>" + '\n' +
+                                      "</head><body>" + '\n' ; 
+            string TemplateEnd = "</body>" + '\n' +
+                                 "</html >";
+            fileEnd.WriteLine(TemplateStart);
             for (int i = 0; i < csFilesToConvert.Count ; ++i)
             {
                 StreamReader file = new StreamReader(csFilesToConvert.ElementAt(i));
-                StreamWriter fileEnd = new StreamWriter("End.txt");
+                
+               
+
+                
                 while ((Input = file.ReadLine()) != null)
                 {
                     string v =  Input.Replace("&", "&gt;");
@@ -62,8 +75,10 @@ namespace WebProjectPatrice
                     v = v.Replace("<", "&lt;");
                     if (keywords)
                         v = AddColor(v);
+                    
                     fileEnd.WriteLine(v);
                 }
+                fileEnd.WriteLine(TemplateEnd);
                 file.Close();
                 fileEnd.Close();
             }
@@ -73,7 +88,7 @@ namespace WebProjectPatrice
         {
             for (int i = 0; i < keywordsList.Count ; ++i)
             {
-                line = line.Replace(keywordsList.ElementAt(i) + " ", "<span class='color'>" + keywordsList.ElementAt(i) + "</span>");
+                line = line.Replace(keywordsList.ElementAt(i) + " ", "<span style='color: blue;'>" + keywordsList.ElementAt(i) + "</span>" + " ");
             }
             
             return line;
