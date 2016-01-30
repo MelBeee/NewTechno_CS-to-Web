@@ -65,9 +65,6 @@ namespace WebProjectPatrice
             {
                 StreamReader file = new StreamReader(csFilesToConvert.ElementAt(i));
                 
-               
-
-                
                 while ((Input = file.ReadLine()) != null)
                 {
                     string v =  Input.Replace("&", "&gt;");
@@ -75,8 +72,8 @@ namespace WebProjectPatrice
                     v = v.Replace("<", "&lt;");
                     if (keywords)
                         v = AddColor(v);
-                    
-                    fileEnd.WriteLine(v);
+
+                    fileEnd.WriteLine(v + "<br />");
                 }
                 fileEnd.WriteLine(TemplateEnd);
                 file.Close();
