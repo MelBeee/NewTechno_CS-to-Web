@@ -18,7 +18,7 @@ namespace WebProjectPatrice
         {
             RemplirTableauKeyWord();
             AnalyseArguments(args);
-                    
+            ReadEachLine();
         }
 
         private static void AnalyseArguments(string[] arguments)
@@ -34,6 +34,7 @@ namespace WebProjectPatrice
                     extension = Path.GetExtension(s);
                     if (extension == ".cs")
                         csFilesToConvert.Add(s);
+                        
             }
         }
 
@@ -47,6 +48,25 @@ namespace WebProjectPatrice
             }
             file.Close();
         }
+        private static void ReadEachLine()
+        {
+            string Input;
+            for (int i = 0; i < csFilesToConvert.Count ; ++i)
+            {
+                StreamReader file = new StreamReader(csFilesToConvert.ElementAt(i));
+                StreamWriter fileEnd = new StreamWriter("End.txt");
+                while ((Input = file.ReadLine()) != null)
+                {
+                    string v =  Input.Replace("&", "&gt");
+                    v = v.Replace(">", "&gt");
+                    v = v.Replace("<", "&lt");
+                    fileEnd.WriteLine(v);
+                }
+                file.Close();
+                fileEnd.Close();
+            }
+        }
+
 
 
     }
