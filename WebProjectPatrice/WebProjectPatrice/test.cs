@@ -8,9 +8,7 @@ namespace WebProjectPatrice
 {
     class test
     {
-
-
         static List<string> tester = new List<string>();   // tableau contenant les fichiers CS a convertir
-
+        // blablabla un keyword ici using 
     }
 }

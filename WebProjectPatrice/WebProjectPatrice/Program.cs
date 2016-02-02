@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace WebProjectPatrice
@@ -13,12 +14,46 @@ namespace WebProjectPatrice
         static bool    stats    = false,        // option qui crée un fichier de statistiques
                        keywords = false;        // option qui met les keywords du langage en relief
         static List<string> csFilesToConvert  = new List<string>();   // tableau contenant les fichiers CS a convertir
+        static Dictionary<string, int> statistiques = new Dictionary<string, int>();  // contient les stats
 
         static void Main(string[] args)
         {
             RemplirTableauKeyWord();
             AnalyseArguments(args);
             ReadEachLine();
+            if (stats)
+                Statistiques();
+
+        }
+
+        private static void Statistiques()
+        {
+            StreamWriter file = new StreamWriter("Statistiques.txt");
+            var items = from pair in statistiques
+                        orderby pair.Value descending,
+                        pair.Key ascending
+                        select pair;
+            foreach (KeyValuePair<string, int> pair in items)
+            {
+                file.WriteLine("{0}: {1}", pair.Key, pair.Value);
+            }
+            file.Close();
+        }
+
+        private static void FillStatsFile(string line)
+        {
+            string pattern = @"[^a-zA-Z0-9_]";
+            string[] words = Regex.Split(line, pattern);
+            for (int i = 0; i < words.Length; ++i)
+            {
+                if(words[i] != "")
+                {
+                    if (!statistiques.ContainsKey(words[i]))
+                        statistiques.Add(words[i], 1);
+                    else
+                        statistiques[words[i]]++;
+                }
+            }
         }
 
         private static void AnalyseArguments(string[] arguments)
@@ -34,7 +69,6 @@ namespace WebProjectPatrice
                     extension = Path.GetExtension(s);
                     if (extension == ".cs")
                         csFilesToConvert.Add(s);
-                        
             }
         }
 
@@ -56,9 +90,9 @@ namespace WebProjectPatrice
                                       "<html>" + '\n' +
                                       "<head>" + '\n' +
                                       "<meta charset = 'utf-8' />" + '\n' +
-                                      "<title> Titre </title>" + '\n' +
-                                      "</head><body>" + '\n' ; 
-            string TemplateEnd = "</body>" + '\n' +
+                                      "<style> span {color:blue;} </style>" +
+                                      "</head><body><pre>" + '\n' ; 
+            string TemplateEnd = "</pre></body>" + '\n' +
                                  "</html >";
             fileEnd.WriteLine(TemplateStart);
             for (int i = 0; i < csFilesToConvert.Count ; ++i)
@@ -70,10 +104,12 @@ namespace WebProjectPatrice
                     string v =  Input.Replace("&", "&gt;");
                     v = v.Replace(">", "&gt;");
                     v = v.Replace("<", "&lt;");
+                    if (stats)
+                        FillStatsFile(v);
                     if (keywords)
                         v = AddColor(v);
 
-                    fileEnd.WriteLine(v + "<br />");
+                    fileEnd.WriteLine(v);
                 }
                 fileEnd.WriteLine(TemplateEnd);
                 file.Close();
@@ -83,32 +119,22 @@ namespace WebProjectPatrice
 
         private static string AddColor(string line)
         {
-            for (int i = 0; i < keywordsList.Count ; ++i)
+            string pattern = @"([^a-zA-Z])";
+            string sentence = "";
+            string[] words = Regex.Split(line, pattern);
+            for(int i = 0 ; i < words.Length ; ++i)
             {
-                line = line.Replace(keywordsList.ElementAt(i) + " ", "<span style='color: blue;'>" + keywordsList.ElementAt(i) + "</span>" + " ");
+                words[i] = ChangeColor(words[i]);
+                sentence += words[i];
             }
-            return line;
+            return sentence;
         }
 
-        private static void Statistiques()
+        private static string ChangeColor(string word)
         {
-            StreamReader file = new StreamReader(csFilesToConvert.ElementAt(0));
-            var statistiques = new Dictionary<string, int>();
-            for(string s; file >> s) 
-            statistiques[s]++;
+            if (keywordsList.Contains(word, StringComparer.OrdinalIgnoreCase))
+                word = "<span>" + word + "</span>";
+            return word; 
         }
     }
 }
-
-/*
-  blalbalba
-  lbalbalblb
-  blalblabalba
-  <string> blablabla <allo> werwoer a /salut"
-*/
-
-/*
- ifstream in{ "" };
-for (string s; in >> s;)
-mots[s]++;
- */
