@@ -15,6 +15,8 @@ namespace WebProjectPatrice
                        keywords = false;        // option qui met les keywords du langage en relief
         static List<string> csFilesToConvert  = new List<string>();   // tableau contenant les fichiers CS a convertir
         static Dictionary<string, int> statistiques = new Dictionary<string, int>();  // contient les stats
+        static int NumberKeyWord = 0;
+        static int NumberOfNumber = 0;
 
         static void Main(string[] args)
         {
@@ -37,17 +39,21 @@ namespace WebProjectPatrice
             {
                 file.WriteLine("{0}: {1}", pair.Key, pair.Value);
             }
+            file.WriteLine("Nombre de KeyWord : " + NumberKeyWord);
+            file.WriteLine("Nombre de Nombre : " + NumberOfNumber);
             file.Close();
         }
 
         private static void FillStatsFile(string line)
         {
-            string pattern = @"[^a-zA-Z0-9_]";
+            string pattern = @"[^\w_]|(\d+\.\d+)";
             string[] words = Regex.Split(line, pattern);
             for (int i = 0; i < words.Length; ++i)
             {
                 if(words[i] != "")
                 {
+                    if ((Regex.IsMatch(words[i], @"^\d+\.\d+")) || (Regex.IsMatch(words[i], @"^\d+")))
+                        NumberOfNumber++;
                     if (!statistiques.ContainsKey(words[i]))
                         statistiques.Add(words[i], 1);
                     else
@@ -101,16 +107,20 @@ namespace WebProjectPatrice
                 
                 while ((Input = file.ReadLine()) != null)
                 {
-                    string v =  Input.Replace("&", "&gt;");
-                    v = v.Replace(">", "&gt;");
-                    v = v.Replace("<", "&lt;");
+
+                    string v = Input;
                     if (stats)
                         FillStatsFile(v);
+                    v =  Input.Replace("&", "&amp;");
+                    v = v.Replace(">", "&gt;");
+                    v = v.Replace("<", "&lt;");
                     if (keywords)
                         v = AddColor(v);
+                        NumberKeyWord++;
 
                     fileEnd.WriteLine(v);
                 }
+
                 fileEnd.WriteLine(TemplateEnd);
                 file.Close();
                 fileEnd.Close();
@@ -121,11 +131,13 @@ namespace WebProjectPatrice
         {
             string pattern = @"([^a-zA-Z])";
             string sentence = "";
+            
             string[] words = Regex.Split(line, pattern);
             for(int i = 0 ; i < words.Length ; ++i)
             {
                 words[i] = ChangeColor(words[i]);
                 sentence += words[i];
+                
             }
             return sentence;
         }
@@ -134,6 +146,7 @@ namespace WebProjectPatrice
         {
             if (keywordsList.Contains(word, StringComparer.OrdinalIgnoreCase))
                 word = "<span>" + word + "</span>";
+                
             return word; 
         }
     }
