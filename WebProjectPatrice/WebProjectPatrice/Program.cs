@@ -15,7 +15,6 @@ namespace WebProjectPatrice
                        keywords = false;        // option qui met les keywords du langage en relief
         static List<string> csFilesToConvert  = new List<string>();   // tableau contenant les fichiers CS a convertir
         static Dictionary<string, int> statistiques = new Dictionary<string, int>();  // contient les stats
-        static int NumberKeyWord = 0;
         static int NumberOfNumber = 0;
 
         static void Main(string[] args)
@@ -25,7 +24,6 @@ namespace WebProjectPatrice
             ReadEachLine();
             if (stats)
                 Statistiques();
-
         }
 
         private static void Statistiques()
@@ -35,12 +33,15 @@ namespace WebProjectPatrice
                         orderby pair.Value descending,
                         pair.Key ascending
                         select pair;
+            int nbreKeyWords = 0;
             foreach (KeyValuePair<string, int> pair in items)
             {
                 file.WriteLine("{0}: {1}", pair.Key, pair.Value);
+                if (keywordsList.Contains(pair.Key))
+                    nbreKeyWords += pair.Value;
             }
-            file.WriteLine("Nombre de KeyWord : " + NumberKeyWord);
-            file.WriteLine("Nombre de Nombre : " + NumberOfNumber);
+            file.WriteLine("Il y a " + nbreKeyWords + " mot clés dans les fichiers");
+            file.WriteLine("Il y a " + NumberOfNumber + " nombre dans les fichiers");
             file.Close();
         }
 
@@ -88,10 +89,10 @@ namespace WebProjectPatrice
             }
             file.Close();
         }
+
         private static void ReadEachLine()
         {
             string Input;
-            StreamWriter fileEnd = new StreamWriter("End.html");
             string TemplateStart = "<!DOCTYPE html>" + '\n' +
                                       "<html>" + '\n' +
                                       "<head>" + '\n' +
@@ -100,14 +101,13 @@ namespace WebProjectPatrice
                                       "</head><body><pre>" + '\n' ; 
             string TemplateEnd = "</pre></body>" + '\n' +
                                  "</html >";
-            fileEnd.WriteLine(TemplateStart);
             for (int i = 0; i < csFilesToConvert.Count ; ++i)
             {
-                StreamReader file = new StreamReader(csFilesToConvert.ElementAt(i));
-                
+                StreamWriter fileEnd = new StreamWriter(csFilesToConvert.ElementAt(i) + ".html");
+                fileEnd.WriteLine(TemplateStart);
+                StreamReader file = new StreamReader(csFilesToConvert.ElementAt(i));  
                 while ((Input = file.ReadLine()) != null)
                 {
-
                     string v = Input;
                     if (stats)
                         FillStatsFile(v);
@@ -116,11 +116,8 @@ namespace WebProjectPatrice
                     v = v.Replace("<", "&lt;");
                     if (keywords)
                         v = AddColor(v);
-                        NumberKeyWord++;
-
                     fileEnd.WriteLine(v);
                 }
-
                 fileEnd.WriteLine(TemplateEnd);
                 file.Close();
                 fileEnd.Close();
@@ -131,13 +128,11 @@ namespace WebProjectPatrice
         {
             string pattern = @"([^a-zA-Z])";
             string sentence = "";
-            
             string[] words = Regex.Split(line, pattern);
             for(int i = 0 ; i < words.Length ; ++i)
             {
                 words[i] = ChangeColor(words[i]);
-                sentence += words[i];
-                
+                sentence += words[i]; 
             }
             return sentence;
         }
@@ -145,8 +140,7 @@ namespace WebProjectPatrice
         private static string ChangeColor(string word)
         {
             if (keywordsList.Contains(word, StringComparer.OrdinalIgnoreCase))
-                word = "<span>" + word + "</span>";
-                
+                word = "<span>" + word + "</span>";      
             return word; 
         }
     }
