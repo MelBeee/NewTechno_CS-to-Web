@@ -8,11 +8,88 @@ using System.Threading.Tasks;
 
 namespace WebProjectPatrice
 {
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            bool stats = false,
+                 keywords = false;
+            List<string> keywordsList = new List<string>();
+            List<string> csFilesToConvert = new List<string>();
+
+            keywordsList = RemplirTableauKeyWord();
+            csFilesToConvert = AnalyseArguments(args, ref stats, ref keywords);
+            // ouvre les thread pour chaque element dans la List
+            List<CSFile> ListFiles = new List<CSFile>();  
+            for(int i = 0; i < csFilesToConvert.Count(); i++)
+            {
+                CSFile unFile = new CSFile(csFilesToConvert[i]);
+                ListFiles.Add(unFile);
+                ListFiles[i].CreateHTML(stats, keywords, keywordsList);
+            }
+            if (stats)
+                Statistiques(ListFiles[0].getStatsDictionary(), ListFiles[0].getNumberofNumber(), keywordsList);
+        }
+
+        // CRÉE LE FICHIER DE STATISTIQUES
+        private static void Statistiques(Dictionary<string, int> statistiques, int NumberOfNumber, List<string> keywordsList)
+        {
+            StreamWriter file = new StreamWriter("Statistiques.txt");
+            var items = from pair in statistiques
+                        orderby pair.Value descending,
+                        pair.Key ascending
+                        select pair;
+            int nbreKeyWords = 0;
+            foreach (KeyValuePair<string, int> pair in items)
+            {
+                file.WriteLine("{0}: {1}", pair.Key, pair.Value);
+                if (keywordsList.Contains(pair.Key))
+                    nbreKeyWords += pair.Value;
+            }
+            file.WriteLine("Il y a " + nbreKeyWords + " mot clés dans les fichiers");
+            file.WriteLine("Il y a " + NumberOfNumber + " nombre dans les fichiers");
+            file.Close();
+        }
+
+        // ANALYSE LES ARGUMENTS RECU DE L'UTILISATEUR
+        private static List<string> AnalyseArguments(string[] arguments, ref bool stats, ref bool keywords)
+        {
+            List<string> csFilesToConvert = new List<string>();
+            string extension = "";
+            foreach (string s in arguments)
+            {
+                if (s.ToLower() == "-stats" || s.ToLower() == "/stats")
+                    stats = true;
+                else if (s.ToLower() == "-keywords" || s.ToLower() == "/keywords")
+                    keywords = true;
+                else if (s[0] != '-' && s[0] != '/')
+                    extension = Path.GetExtension(s);
+                if (extension == ".cs")
+                    csFilesToConvert.Add(s);
+            }
+            return csFilesToConvert;
+        }
+
+        // REMPLI LA LIST DES KEYWORDS
+        private static List<string> RemplirTableauKeyWord()
+        {
+            List<string> keywordsList = new List<string>();
+            string line;
+            StreamReader file = new StreamReader("KeyWords.txt");
+            while ((line = file.ReadLine()) != null)
+            {
+                if (line != "") keywordsList.Add(line);
+            }
+            file.Close();
+            return keywordsList;
+        }
+    }
+    // CLASSE POUR GERER LES TRANSLATION DE FILES
     class CSFile
     {
         private Dictionary<string, int> statistiques = new Dictionary<string, int>();
         private int NumberOfNumber = 0;
-        private string FileName; 
+        private string FileName;
 
         public CSFile(string name)
         {
@@ -97,82 +174,6 @@ namespace WebProjectPatrice
             if (keywordsList.Contains(word))
                 word = "<span>" + word + "</span>";
             return word;
-        }
-    }
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            bool stats = false,
-                 keywords = false;
-            List<string> keywordsList = new List<string>();
-            List<string> csFilesToConvert = new List<string>();
-
-            keywordsList = RemplirTableauKeyWord();
-            csFilesToConvert = AnalyseArguments(args, ref stats, ref keywords);
-            // ouvre les thread pour chaque element dans la List
-            List<CSFile> ListFiles = new List<CSFile>();  
-            for(int i = 0; i < csFilesToConvert.Count(); i++)
-            {
-                CSFile unFile = new CSFile(csFilesToConvert[i]);
-                ListFiles.Add(unFile);
-                ListFiles[i].CreateHTML(stats, keywords, keywordsList);
-            }
-            if (stats)
-                Statistiques(ListFiles[0].getStatsDictionary(), ListFiles[0].getNumberofNumber(), keywordsList);
-        }
-
-        // CRÉE LE FICHIER DE STATISTIQUES
-        private static void Statistiques(Dictionary<string, int> statistiques, int NumberOfNumber, List<string> keywordsList)
-        {
-            StreamWriter file = new StreamWriter("Statistiques.txt");
-            var items = from pair in statistiques
-                        orderby pair.Value descending,
-                        pair.Key ascending
-                        select pair;
-            int nbreKeyWords = 0;
-            foreach (KeyValuePair<string, int> pair in items)
-            {
-                file.WriteLine("{0}: {1}", pair.Key, pair.Value);
-                if (keywordsList.Contains(pair.Key))
-                    nbreKeyWords += pair.Value;
-            }
-            file.WriteLine("Il y a " + nbreKeyWords + " mot clés dans les fichiers");
-            file.WriteLine("Il y a " + NumberOfNumber + " nombre dans les fichiers");
-            file.Close();
-        }
-
-        // ANALYSE LES ARGUMENTS RECU DE L'UTILISATEUR
-        private static List<string> AnalyseArguments(string[] arguments, ref bool stats, ref bool keywords)
-        {
-            List<string> csFilesToConvert = new List<string>();
-            string extension = "";
-            foreach (string s in arguments)
-            {
-                if (s.ToLower() == "-stats" || s.ToLower() == "/stats")
-                    stats = true;
-                else if (s.ToLower() == "-keywords" || s.ToLower() == "/keywords")
-                    keywords = true;
-                else if (s[0] != '-' && s[0] != '/')
-                    extension = Path.GetExtension(s);
-                if (extension == ".cs")
-                    csFilesToConvert.Add(s);
-            }
-            return csFilesToConvert;
-        }
-
-        // REMPLI LA LIST DES KEYWORDS
-        private static List<string> RemplirTableauKeyWord()
-        {
-            List<string> keywordsList = new List<string>();
-            string line;
-            StreamReader file = new StreamReader("KeyWords.txt");
-            while ((line = file.ReadLine()) != null)
-            {
-                if (line != "") keywordsList.Add(line);
-            }
-            file.Close();
-            return keywordsList;
         }
     }
 }
