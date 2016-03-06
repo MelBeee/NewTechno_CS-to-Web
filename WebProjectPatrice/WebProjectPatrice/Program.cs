@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Threading;
+using System;
 
 namespace WebProjectPatrice
 {
@@ -16,19 +16,36 @@ namespace WebProjectPatrice
                  keywords = false;
             List<string> keywordsList = new List<string>();
             List<string> csFilesToConvert = new List<string>();
+            List<CSFile> ListFiles = new List<CSFile>();
 
             keywordsList = RemplirTableauKeyWord();
             csFilesToConvert = AnalyseArguments(args, ref stats, ref keywords);
             // ouvre les thread pour chaque element dans la List
-            List<CSFile> ListFiles = new List<CSFile>();  
             for(int i = 0; i < csFilesToConvert.Count(); i++)
             {
                 CSFile unFile = new CSFile(csFilesToConvert[i]);
                 ListFiles.Add(unFile);
+            }
+
+            TimeSpan ts = ThreadPool(stats, keywords, keywordsList, ListFiles);
+            // ICI ON ATTEND QUE LE THREAD POOL FINISSE
+        }
+
+        static TimeSpan ThreadPool(bool stats, bool keywords, List<string> keywordsList, List<CSFile> ListFiles)
+        {
+            Stopwatch unwatch = new Stopwatch();
+            unwatch.Start();
+            for (int i = 0; i < ListFiles.Count(); i++)
+            {
+                // ICI ON PART LE THREADPOOL 
                 ListFiles[i].CreateHTML(stats, keywords, keywordsList);
             }
             if (stats)
                 Statistiques(ListFiles[0].getStatsDictionary(), ListFiles[0].getNumberofNumber(), keywordsList);
+            unwatch.Stop();
+            TimeSpan ts = unwatch.Elapsed;
+
+            return ts;
         }
 
         // CRÉE LE FICHIER DE STATISTIQUES
