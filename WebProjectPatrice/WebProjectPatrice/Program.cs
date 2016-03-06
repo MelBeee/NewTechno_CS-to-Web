@@ -20,7 +20,6 @@ namespace WebProjectPatrice
 
             keywordsList = RemplirTableauKeyWord();
             csFilesToConvert = AnalyseArguments(args, ref stats, ref keywords);
-            // ouvre les thread pour chaque element dans la List
             for(int i = 0; i < csFilesToConvert.Count(); i++)
             {
                 CSFile unFile = new CSFile(csFilesToConvert[i]);
@@ -28,7 +27,7 @@ namespace WebProjectPatrice
             }
 
             TimeSpan ts = ThreadPool(stats, keywords, keywordsList, ListFiles);
-            // ICI ON ATTEND QUE LE THREAD POOL FINISSE
+            // ICI ON ATTEND QUE LE THREAD POOL FINISSE POUR STARTER LAUTRE THREAD. ET ON COMPILE LES DONNÉES DE STATS
         }
 
         static TimeSpan ThreadPool(bool stats, bool keywords, List<string> keywordsList, List<CSFile> ListFiles)
