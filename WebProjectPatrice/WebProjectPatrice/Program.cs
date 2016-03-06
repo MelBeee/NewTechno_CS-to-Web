@@ -13,9 +13,10 @@ namespace WebProjectPatrice
         static bool stats = false,
                     keywords = false;
         static List<string> keywordsList = new List<string>();
+        static int nbre = 0;
 
         static void Main(string[] args)
-        { 
+        {
             List<string> csFilesToConvert = new List<string>();
             List<CSFile> ListFiles = new List<CSFile>();
 
@@ -28,11 +29,17 @@ namespace WebProjectPatrice
             }
 
             TimeSpan ts = Threadpool(ListFiles);
-            // ICI ON ATTEND QUE LE THREAD POOL FINISSE POUR STARTER LAUTRE THREAD. ET ON COMPILE LES DONNÉES DE STATS
+
+            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                        ts.Hours, ts.Minutes, ts.Seconds,
+                        ts.Milliseconds / 10);
+            Console.WriteLine("RunTime " + elapsedTime);
         }
 
         static TimeSpan Threadpool(List<CSFile> ListFiles)
         {
+            nbre = ListFiles.Count();
+
             Stopwatch unwatch = new Stopwatch();
             unwatch.Start();
 
@@ -43,10 +50,10 @@ namespace WebProjectPatrice
                 ThreadPool.QueueUserWorkItem(new WaitCallback(task), ListFiles[i]);
             }
             // attendre d'avoir toute fini les thread
-            if (stats)
-                Statistiques(ListFiles[0].getStatsDictionary(), ListFiles[0].getNumberofNumber(), keywordsList);
 
-  
+            while (nbre != 0)
+                Thread.Sleep(100);
+
             unwatch.Stop();
             TimeSpan ts = unwatch.Elapsed;
 
@@ -57,26 +64,7 @@ namespace WebProjectPatrice
         {
             CSFile unFichier = (CSFile)unObjet;
             unFichier.CreateHTML(stats, keywords, keywordsList);
-        }
-
-        // CRÉE LE FICHIER DE STATISTIQUES
-        private static void Statistiques(Dictionary<string, int> statistiques, int NumberOfNumber, List<string> keywordsList)
-        {
-            StreamWriter file = new StreamWriter("Statistiques.txt");
-            var items = from pair in statistiques
-                        orderby pair.Value descending,
-                        pair.Key ascending
-                        select pair;
-            int nbreKeyWords = 0;
-            foreach (KeyValuePair<string, int> pair in items)
-            {
-                file.WriteLine("{0}: {1}", pair.Key, pair.Value);
-                if (keywordsList.Contains(pair.Key))
-                    nbreKeyWords += pair.Value;
-            }
-            file.WriteLine("Il y a " + nbreKeyWords + " mot clés dans les fichiers");
-            file.WriteLine("Il y a " + NumberOfNumber + " nombre dans les fichiers");
-            file.Close();
+            nbre--;
         }
 
         // ANALYSE LES ARGUMENTS RECU DE L'UTILISATEUR
@@ -94,6 +82,15 @@ namespace WebProjectPatrice
                     extension = Path.GetExtension(s);
                 if (extension == ".cs")
                     csFilesToConvert.Add(s);
+            }
+            //finalement on va chercher les fichiers directement dans un repertoire. c'est trop long écrire 2200 arguments
+            string dir = @"C:\Users\Mélissa\Documents\GitHub\NewTechno_CS-to-Web\WebProjectPatrice\WebProjectPatrice\bin\Debug\FichiersPourTests";
+            string[] files = Directory.GetFiles(dir);
+            foreach (string file in files)
+            {
+                extension = Path.GetExtension(file);
+                if (extension == ".cs")
+                    csFilesToConvert.Add(Path.GetFileName(file));
             }
             return csFilesToConvert;
         }
@@ -129,9 +126,33 @@ namespace WebProjectPatrice
             return NumberOfNumber;
         }
 
+        private void setNumberofNumber(int nbre)
+        {
+            NumberOfNumber = nbre;
+        }
+
         public Dictionary<string, int> getStatsDictionary()
         {
             return statistiques;
+        }
+
+        private void CreateStats(List<string> keywordsList)
+        {
+            StreamWriter file = new StreamWriter(FileName + "Stats.txt");
+            var items = from pair in statistiques
+                        orderby pair.Value descending,
+                        pair.Key ascending
+                        select pair;
+            int nbreKeyWords = 0;
+            foreach (KeyValuePair<string, int> pair in items)
+            {
+                file.WriteLine("{0}: {1}", pair.Key, pair.Value);
+                if (keywordsList.Contains(pair.Key))
+                    nbreKeyWords += pair.Value;
+            }
+            file.WriteLine("Il y a " + nbreKeyWords + " mot clés dans le fichier");
+            file.WriteLine("Il y a " + NumberOfNumber + " nombre dans le fichier");
+            file.Close();
         }
 
         public void CreateHTML(bool stats, bool keywords, List<string> keywordsList)
@@ -148,7 +169,7 @@ namespace WebProjectPatrice
                                  "</html >";
             StreamWriter fileEnd = new StreamWriter(FileName + ".html");
             fileEnd.WriteLine(TemplateStart);
-            StreamReader file = new StreamReader(FileName);
+            StreamReader file = new StreamReader(@"C:\Users\Mélissa\Documents\GitHub\NewTechno_CS-to-Web\WebProjectPatrice\WebProjectPatrice\bin\Debug\FichiersPourTests\" + FileName);
             while ((Input = file.ReadLine()) != null)
             {
                 string v = Input;
@@ -164,6 +185,10 @@ namespace WebProjectPatrice
             fileEnd.WriteLine(TemplateEnd);
             file.Close();
             fileEnd.Close();
+            if(stats)
+            {
+                CreateStats(keywordsList);
+            }
         }
 
         private void FillStatsDictionnary(string line)
@@ -175,7 +200,7 @@ namespace WebProjectPatrice
                 if (words[i] != "")
                 {
                     if ((Regex.IsMatch(words[i], @"^\d+\.\d+")) || (Regex.IsMatch(words[i], @"^\d+")))
-                        NumberOfNumber++;
+                        setNumberofNumber(getNumberofNumber() + 1);
                     if (!statistiques.ContainsKey(words[i]))
                         statistiques.Add(words[i], 1);
                     else
