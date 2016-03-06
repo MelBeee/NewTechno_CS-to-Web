@@ -10,41 +10,53 @@ namespace WebProjectPatrice
 {
     class Program
     {
+        static bool stats = false,
+                    keywords = false;
+        static List<string> keywordsList = new List<string>();
+
         static void Main(string[] args)
-        {
-            bool stats = false,
-                 keywords = false;
-            List<string> keywordsList = new List<string>();
+        { 
             List<string> csFilesToConvert = new List<string>();
             List<CSFile> ListFiles = new List<CSFile>();
 
             keywordsList = RemplirTableauKeyWord();
-            csFilesToConvert = AnalyseArguments(args, ref stats, ref keywords);
-            for(int i = 0; i < csFilesToConvert.Count(); i++)
+            csFilesToConvert = AnalyseArguments(args);
+            for (int i = 0; i < csFilesToConvert.Count(); i++)
             {
                 CSFile unFile = new CSFile(csFilesToConvert[i]);
                 ListFiles.Add(unFile);
             }
 
-            TimeSpan ts = ThreadPool(stats, keywords, keywordsList, ListFiles);
+            TimeSpan ts = Threadpool(ListFiles);
             // ICI ON ATTEND QUE LE THREAD POOL FINISSE POUR STARTER LAUTRE THREAD. ET ON COMPILE LES DONNÉES DE STATS
         }
 
-        static TimeSpan ThreadPool(bool stats, bool keywords, List<string> keywordsList, List<CSFile> ListFiles)
+        static TimeSpan Threadpool(List<CSFile> ListFiles)
         {
             Stopwatch unwatch = new Stopwatch();
             unwatch.Start();
+
+            ThreadPool.SetMaxThreads(Environment.ProcessorCount, Environment.ProcessorCount);
+
             for (int i = 0; i < ListFiles.Count(); i++)
             {
-                // ICI ON PART LE THREADPOOL 
-                ListFiles[i].CreateHTML(stats, keywords, keywordsList);
+                ThreadPool.QueueUserWorkItem(new WaitCallback(task), ListFiles[i]);
             }
+            // attendre d'avoir toute fini les thread
             if (stats)
                 Statistiques(ListFiles[0].getStatsDictionary(), ListFiles[0].getNumberofNumber(), keywordsList);
+
+  
             unwatch.Stop();
             TimeSpan ts = unwatch.Elapsed;
 
             return ts;
+        }
+
+        private static void task(Object unObjet)
+        {
+            CSFile unFichier = (CSFile)unObjet;
+            unFichier.CreateHTML(stats, keywords, keywordsList);
         }
 
         // CRÉE LE FICHIER DE STATISTIQUES
@@ -68,7 +80,7 @@ namespace WebProjectPatrice
         }
 
         // ANALYSE LES ARGUMENTS RECU DE L'UTILISATEUR
-        private static List<string> AnalyseArguments(string[] arguments, ref bool stats, ref bool keywords)
+        private static List<string> AnalyseArguments(string[] arguments)
         {
             List<string> csFilesToConvert = new List<string>();
             string extension = "";
