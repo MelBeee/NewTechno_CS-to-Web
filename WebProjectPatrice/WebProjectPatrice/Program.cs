@@ -30,12 +30,30 @@ namespace WebProjectPatrice
             }
 
             //TimeSpan ts = Threadpool(ListFiles);
-            TimeSpan ts = ParallelThreads(ListFiles);
+            //TimeSpan ts = ParallelThreads(ListFiles);
+            TimeSpan ts = NoThread(ListFiles);
 
             string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                         ts.Hours, ts.Minutes, ts.Seconds,
                         ts.Milliseconds / 10);
             Console.WriteLine("RunTime " + elapsedTime);
+        }
+
+        // PAS DE THREAD
+        static TimeSpan NoThread(List<CSFile> ListFiles)
+        {
+            Stopwatch unwatch = new Stopwatch();
+            unwatch.Start();
+
+            foreach(CSFile f in ListFiles)
+            {
+                f.CreateHTML(stats, keywords, keywordsList);
+            }
+
+            unwatch.Stop();
+            TimeSpan ts = unwatch.Elapsed;
+
+            return ts;
         }
 
         // PARALLEL FOREACH
@@ -55,6 +73,7 @@ namespace WebProjectPatrice
             return ts;
         }
 
+        // THREAD POOL
         static TimeSpan Threadpool(List<CSFile> ListFiles)
         {
             nbre = ListFiles.Count();
