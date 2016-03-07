@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Threading;
 using System;
+using System.Threading.Tasks;
 
 namespace WebProjectPatrice
 {
@@ -28,12 +29,30 @@ namespace WebProjectPatrice
                 ListFiles.Add(unFile);
             }
 
-            TimeSpan ts = Threadpool(ListFiles);
+            //TimeSpan ts = Threadpool(ListFiles);
+            TimeSpan ts = ParallelThreads(ListFiles);
 
             string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                         ts.Hours, ts.Minutes, ts.Seconds,
                         ts.Milliseconds / 10);
             Console.WriteLine("RunTime " + elapsedTime);
+        }
+
+        // PARALLEL FOREACH
+        static TimeSpan ParallelThreads(List<CSFile> ListFiles)
+        {
+            Stopwatch unwatch = new Stopwatch();
+            unwatch.Start();
+
+            Parallel.ForEach(ListFiles, File =>
+            {
+                File.CreateHTML(stats, keywords, keywordsList);
+            });
+
+            unwatch.Stop();
+            TimeSpan ts = unwatch.Elapsed;
+
+            return ts;
         }
 
         static TimeSpan Threadpool(List<CSFile> ListFiles)
@@ -84,7 +103,7 @@ namespace WebProjectPatrice
                     csFilesToConvert.Add(s);
             }
             //finalement on va chercher les fichiers directement dans un repertoire. c'est trop long écrire 2200 arguments
-            string dir = @"C:\Users\Mélissa\Documents\GitHub\NewTechno_CS-to-Web\WebProjectPatrice\WebProjectPatrice\bin\Debug\FichiersPourTests";
+            string dir = @"C:\Users\Mélissa\Documents\GitHub\NewTechno_CS-to-Web\WebProjectPatrice\WebProjectPatrice\bin\Debug\PetitFichiers";
             string[] files = Directory.GetFiles(dir);
             foreach (string file in files)
             {
@@ -169,7 +188,7 @@ namespace WebProjectPatrice
                                  "</html >";
             StreamWriter fileEnd = new StreamWriter(FileName + ".html");
             fileEnd.WriteLine(TemplateStart);
-            StreamReader file = new StreamReader(@"C:\Users\Mélissa\Documents\GitHub\NewTechno_CS-to-Web\WebProjectPatrice\WebProjectPatrice\bin\Debug\FichiersPourTests\" + FileName);
+            StreamReader file = new StreamReader(@"C:\Users\Mélissa\Documents\GitHub\NewTechno_CS-to-Web\WebProjectPatrice\WebProjectPatrice\bin\Debug\PetitFichiers\" + FileName);
             while ((Input = file.ReadLine()) != null)
             {
                 string v = Input;
