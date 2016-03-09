@@ -122,7 +122,7 @@ namespace WebProjectPatrice
                     csFilesToConvert.Add(s);
             }
             //finalement on va chercher les fichiers directement dans un repertoire. c'est trop long écrire 2200 arguments
-            string dir = @"C:\Users\Mélissa\Documents\GitHub\NewTechno_CS-to-Web\WebProjectPatrice\WebProjectPatrice\bin\Debug\PetitFichiers";
+            string dir = @"G:\Lionel-Groulx\Session 6\Patrice\NewTechno_CS-to-Web\WebProjectPatrice\WebProjectPatrice\bin\Debug\GrosFichiers";
             string[] files = Directory.GetFiles(dir);
             foreach (string file in files)
             {
@@ -207,7 +207,7 @@ namespace WebProjectPatrice
                                  "</html >";
             StreamWriter fileEnd = new StreamWriter(FileName + ".html");
             fileEnd.WriteLine(TemplateStart);
-            StreamReader file = new StreamReader(@"C:\Users\Mélissa\Documents\GitHub\NewTechno_CS-to-Web\WebProjectPatrice\WebProjectPatrice\bin\Debug\PetitFichiers\" + FileName);
+            StreamReader file = new StreamReader(@"G:\Lionel-Groulx\Session 6\Patrice\NewTechno_CS-to-Web\WebProjectPatrice\WebProjectPatrice\bin\Debug\GrosFichiers\" + FileName);
             while ((Input = file.ReadLine()) != null)
             {
                 string v = Input;
